@@ -8,6 +8,9 @@
 
 using namespace std;
 
+#define MIN_N                               4
+#define MIN_ERR                             0.01
+
 list<list<double> > loaddata(string file_name)
 {
     fstream fs(file_name.c_str(), ios::in);
@@ -141,7 +144,7 @@ pair<int, double> select_best_partition(list<list<double> > datalist)
     int feature = 0;
     double value = 0;
     double err = 0;
-    double minerr = 0;
+    double minerr = DBL_MAX;
     err = compute_error(datalist);
     int featurelen = datalist.begin()->size() - 1;
     list<list<double> >::iterator iter = datalist.begin();
@@ -153,6 +156,14 @@ pair<int, double> select_best_partition(list<list<double> > datalist)
             advance(in_iter, i);
             list<list<double> > leftlist, rightlist;
             divide_dataset(datalist, i, *in_iter, leftlist, rightlist);
+            if(leftlist.size() < MIN_N || rightlist.size() < MIN_N)continue;
+            double curerr = compute_error(leftlist) + compute_error(rightlist);
+            if(curerr < minerr)
+            {
+                feature = i;
+                value = *in_iter;
+                minerr = curerr;
+            }
         }
     }
     
